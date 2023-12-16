@@ -133,24 +133,24 @@ fn main() {
                             let mut valid_word = true;
 
                             match_pos = 12 - first_match.get(1).unwrap().start();
-                            grid[0].insert_str(0, &first_match[0]);
-                            grid[0].insert_str(0, &" ".repeat(match_pos));
+                            grid[0].push_str(&" ".repeat(match_pos));
+                            grid[0].push_str(&first_match[0]);
 
                             match_pos = 12 - second_match.get(1).unwrap().start();
-                            grid[1].insert_str(0, &second_match[0]);
-                            grid[1].insert_str(0, &" ".repeat(match_pos));
+                            grid[1].push_str(&" ".repeat(match_pos));
+                            grid[1].push_str(&second_match[0]);
 
                             match_pos = 12 - third_match.get(1).unwrap().start();
-                            grid[2].insert_str(0, &third_match[0]);
-                            grid[2].insert_str(0, &" ".repeat(match_pos));
+                            grid[2].push_str(&" ".repeat(match_pos));
+                            grid[2].push_str(&third_match[0]);
 
                             match_pos = 12 - fourth_match.get(1).unwrap().start();
-                            grid[3].insert_str(0, &fourth_match[0]);
-                            grid[3].insert_str(0, &" ".repeat(match_pos));
+                            grid[3].push_str(&" ".repeat(match_pos));
+                            grid[3].push_str(&fourth_match[0]);
 
                             match_pos = 12 - fifth_match.get(1).unwrap().start();
-                            grid[4].insert_str(0, &fifth_match[0]);
-                            grid[4].insert_str(0, &" ".repeat(match_pos));
+                            grid[4].push_str(&" ".repeat(match_pos));
+                            grid[4].push_str(&fifth_match[0]);
 
                             'outer: for i in 0..grid.iter().max_by_key(|x| x.len()).unwrap().len() {
                                 let vertical_string: String =
