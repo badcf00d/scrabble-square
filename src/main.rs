@@ -21,7 +21,7 @@ fn read_lines(filename: &str) -> Vec<String> {
     result
 }
 
-fn search_for_string<'a>(regex: String, haystack: &'a Vec<&str>) -> Vec<Captures<'a>> {
+fn find_regex_groups<'a>(regex: String, haystack: &'a Vec<&str>) -> Vec<Captures<'a>> {
     let mut list: Vec<Captures> = Vec::new();
     let re: Regex = Regex::new(regex.as_str()).unwrap();
 
@@ -43,7 +43,7 @@ fn produce_line_list<'a>(
 
     let mut line_list: Vec<Vec<Captures>> = vec![];
 
-    let mut first_line = search_for_string(
+    let mut first_line = find_regex_groups(
         format!(
             ".*({}).{}.*",
             word1.chars().next().unwrap(),
@@ -51,7 +51,7 @@ fn produce_line_list<'a>(
         ),
         word_list,
     );
-    let mut second_line = search_for_string(
+    let mut second_line = find_regex_groups(
         format!(
             ".*({}).{}.*",
             word1.chars().nth(1).unwrap(),
@@ -59,7 +59,7 @@ fn produce_line_list<'a>(
         ),
         word_list,
     );
-    let mut third_line = search_for_string(
+    let mut third_line = find_regex_groups(
         format!(
             ".*({}).{}.*",
             word1.chars().nth(2).unwrap(),
@@ -67,7 +67,7 @@ fn produce_line_list<'a>(
         ),
         word_list,
     );
-    let mut fourth_line = search_for_string(
+    let mut fourth_line = find_regex_groups(
         format!(
             ".*({}).{}.*",
             word1.chars().nth(3).unwrap(),
@@ -75,7 +75,7 @@ fn produce_line_list<'a>(
         ),
         word_list,
     );
-    let mut fifth_line = search_for_string(
+    let mut fifth_line = find_regex_groups(
         format!(
             ".*({}).{}.*",
             word1.chars().nth(4).unwrap(),
@@ -103,7 +103,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let mut word_list_string: Vec<String> = read_lines("sowpods.txt");
 
-    word_list_string.retain(|word| word.len() < 10);
+    word_list_string.retain(|word| word.len() < 12);
 
     let word_list: Vec<&str> = word_list_string.iter().map(|x| x.as_str()).collect();
 
@@ -122,24 +122,35 @@ fn main() {
 
                     for fourth_match in &line_list[3] {
                         for fifth_match in &line_list[4] {
-                            let mut grid: Vec<String> = vec![];
+                            let mut grid: [String; 5] = [
+                                String::with_capacity(32),
+                                String::with_capacity(32),
+                                String::with_capacity(32),
+                                String::with_capacity(32),
+                                String::with_capacity(32),
+                            ];
                             let mut match_pos;
                             let mut valid_word = true;
 
-                            match_pos = 10 - first_match.get(1).unwrap().start();
-                            grid.push(format!("{:match_pos$}{}", "", &first_match[0]));
+                            match_pos = 12 - first_match.get(1).unwrap().start();
+                            grid[0].insert_str(0, &first_match[0]);
+                            grid[0].insert_str(0, &" ".repeat(match_pos));
 
-                            match_pos = 10 - second_match.get(1).unwrap().start();
-                            grid.push(format!("{:match_pos$}{}", "", &second_match[0]));
+                            match_pos = 12 - second_match.get(1).unwrap().start();
+                            grid[1].insert_str(0, &second_match[0]);
+                            grid[1].insert_str(0, &" ".repeat(match_pos));
 
-                            match_pos = 10 - third_match.get(1).unwrap().start();
-                            grid.push(format!("{:match_pos$}{}", "", &third_match[0]));
+                            match_pos = 12 - third_match.get(1).unwrap().start();
+                            grid[2].insert_str(0, &third_match[0]);
+                            grid[2].insert_str(0, &" ".repeat(match_pos));
 
-                            match_pos = 10 - fourth_match.get(1).unwrap().start();
-                            grid.push(format!("{:match_pos$}{}", "", &fourth_match[0]));
+                            match_pos = 12 - fourth_match.get(1).unwrap().start();
+                            grid[3].insert_str(0, &fourth_match[0]);
+                            grid[3].insert_str(0, &" ".repeat(match_pos));
 
-                            match_pos = 10 - fifth_match.get(1).unwrap().start();
-                            grid.push(format!("{:match_pos$}{}", "", &fifth_match[0]));
+                            match_pos = 12 - fifth_match.get(1).unwrap().start();
+                            grid[4].insert_str(0, &fifth_match[0]);
+                            grid[4].insert_str(0, &" ".repeat(match_pos));
 
                             'outer: for i in 0..grid.iter().max_by_key(|x| x.len()).unwrap().len() {
                                 let vertical_string: String =
