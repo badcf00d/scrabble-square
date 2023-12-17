@@ -99,6 +99,48 @@ fn produce_line_list<'a>(
     line_list
 }
 
+fn word_grid_test(matches: [&Captures; 5], word_list: &Vec<&str>, output: &Mutex<File>) {
+    let mut grid: [String; 5] = [
+        String::with_capacity(32),
+        String::with_capacity(32),
+        String::with_capacity(32),
+        String::with_capacity(32),
+        String::with_capacity(32),
+    ];
+    let mut match_pos;
+
+    for i in 0..matches.len() {
+        match_pos = 12 - matches[i].get(1).unwrap().start();
+        grid[i].push_str(&" ".repeat(match_pos));
+        grid[i].push_str(&matches[i][0]);
+    }
+
+    let longest_row = grid.iter().max_by_key(|x| x.len()).unwrap();
+
+    for i in 0..longest_row.len() {
+        let vertical_string: String = grid.iter().filter_map(|s| s.chars().nth(i)).collect();
+
+        let vertical_words: Vec<&str> = vertical_string
+            .split_whitespace()
+            .filter(|word| word.len() >= 2)
+            .collect();
+
+        for vertical_word in vertical_words {
+            if word_list.binary_search(&vertical_word).is_err() {
+                return;
+            }
+        }
+    }
+
+    let result = format!(
+        "--------------------------\n{}\n{}\n{}\n{}\n{}\n",
+        &grid[0], &grid[1], &grid[2], &grid[3], &grid[4]
+    );
+    println!("{}", result);
+
+    output.lock().unwrap().write_all(result.as_bytes()).unwrap();
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     let mut word_list_string: Vec<String> = read_lines("sowpods.txt");
@@ -113,75 +155,17 @@ fn main() {
     let file = Mutex::new(raw_file);
 
     line_list[0]
-        .par_iter()
-        .enumerate()
-        .for_each(|(_i, first_match)| {
-            for second_match in &line_list[1] {
-                for third_match in &line_list[2] {
-                    println!("{}", &third_match[0]);
-
-                    for fourth_match in &line_list[3] {
-                        for fifth_match in &line_list[4] {
-                            let mut grid: [String; 5] = [
-                                String::with_capacity(32),
-                                String::with_capacity(32),
-                                String::with_capacity(32),
-                                String::with_capacity(32),
-                                String::with_capacity(32),
-                            ];
-                            let mut match_pos;
-                            let mut valid_word = true;
-
-                            match_pos = 12 - first_match.get(1).unwrap().start();
-                            grid[0].push_str(&" ".repeat(match_pos));
-                            grid[0].push_str(&first_match[0]);
-
-                            match_pos = 12 - second_match.get(1).unwrap().start();
-                            grid[1].push_str(&" ".repeat(match_pos));
-                            grid[1].push_str(&second_match[0]);
-
-                            match_pos = 12 - third_match.get(1).unwrap().start();
-                            grid[2].push_str(&" ".repeat(match_pos));
-                            grid[2].push_str(&third_match[0]);
-
-                            match_pos = 12 - fourth_match.get(1).unwrap().start();
-                            grid[3].push_str(&" ".repeat(match_pos));
-                            grid[3].push_str(&fourth_match[0]);
-
-                            match_pos = 12 - fifth_match.get(1).unwrap().start();
-                            grid[4].push_str(&" ".repeat(match_pos));
-                            grid[4].push_str(&fifth_match[0]);
-
-                            'outer: for i in 0..grid.iter().max_by_key(|x| x.len()).unwrap().len() {
-                                let vertical_string: String =
-                                    grid.iter().filter_map(|s| s.chars().nth(i)).collect();
-
-                                let vertical_words: Vec<&str> = vertical_string
-                                    .split_whitespace()
-                                    .filter(|word| word.len() >= 2)
-                                    .collect();
-
-                                for vertical_word in vertical_words {
-                                    if word_list.binary_search(&vertical_word).is_err() {
-                                        valid_word = false;
-                                        break 'outer;
-                                    }
-                                }
-                            }
-
-                            if valid_word {
-                                let result = format!(
-                                    "--------------------------\n{}\n{}\n{}\n{}\n{}\n",
-                                    &grid[0], &grid[1], &grid[2], &grid[3], &grid[4]
-                                );
-                                println!("{}", result);
-
-                                file.lock().unwrap().write_all(result.as_bytes()).unwrap();
-                            }
-                        }
+    .par_iter()
+    .enumerate()
+    .for_each(|(_i, first_match)| {
+        for second_match in &line_list[1] {
+            for third_match in &line_list[2] {
+                for fourth_match in &line_list[3] {
+                    for fifth_match in &line_list[4] {
+                        word_grid_test([first_match, second_match, third_match, fourth_match, fifth_match], &word_list, &file);
                     }
                 }
             }
-            //}
-        });
+        }
+    });
 }
